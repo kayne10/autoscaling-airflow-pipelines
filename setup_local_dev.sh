@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/bin/sh
 
-TAG_NAME=${1}
+TAG_NAME="${1}"
 
 # if tag_name exists in local docker images then delete and rebuild
 
