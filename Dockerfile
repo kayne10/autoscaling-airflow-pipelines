@@ -10,8 +10,8 @@ ENV LC_ALL en_US.UTF-8
 ENV LC_CTYPE en_US.UTF-8
 ENV LC_MESSAGES en_US.UTF-8
 
-ADD ./config/airflow.cfg $AIRFLOW_HOME/
 ADD ./dags $AIRFLOW_HOME/dags
+ADD ./config/airflow.cfg $AIRFLOW_HOME/
 ADD ./config/requirements.txt $AIRFLOW_HOME/
 ADD ./plugins $AIRFLOW_HOME/plugins
 
