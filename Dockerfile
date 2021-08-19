@@ -10,7 +10,10 @@ ENV LC_ALL en_US.UTF-8
 ENV LC_CTYPE en_US.UTF-8
 ENV LC_MESSAGES en_US.UTF-8
 
-ADD . /usr/local/airflow
+ADD ./config/airflow.cfg $AIRFLOW_HOME/
+ADD ./dags $AIRFLOW_HOME/dags
+ADD ./config/requirements.txt $AIRFLOW_HOME/
+ADD ./plugins $AIRFLOW_HOME/plugins
 
 WORKDIR "/usr/local/airflow"
 
@@ -21,7 +24,7 @@ ENV PYTHONPATH=$PYTHONPATH:$AIRFLOW_HOME
 EXPOSE 8080
 
 RUN chmod u+x entrypoint.sh
-RUN chmod +x myairflow/scripts/etl/*.py
+RUN chmod +x scripts/etl/*.py
 
 ENTRYPOINT ["/usr/local/airflow/entrypoint.sh"]
 CMD ["webserver"]

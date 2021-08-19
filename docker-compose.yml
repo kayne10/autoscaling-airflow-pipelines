@@ -29,8 +29,8 @@ services:
     depends_on:
       - postgres
     volumes:
-      - ./myairflow/dags:/usr/local/airflow/myairflow/dags
-      - ./myairflow/lib:/usr/local/airflow/myairflow/lib
+      - ./dags:/usr/local/airflow/dags
+      - ./plugins:/usr/local/airflow/plugins
       - ./logs:/usr/local/airflow/logs
     ports:
       - "8080:8080"
@@ -46,8 +46,8 @@ services:
     depends_on:
       - webserver
     volumes:
-      - ./myairflow/dags:/usr/local/airflow/myairflow/dags
-      - ./myairflow/lib:/usr/local/airflow/myairflow/lib
+      - ./dags:/usr/local/airflow/myairflow/dags
+      - ./plugins:/usr/local/airflow/plugins
       - ./logs:/usr/local/airflow/logs
     env_file:
       - ./local.env
