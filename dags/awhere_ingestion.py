@@ -1,5 +1,5 @@
 from airflow import DAG
-from myairflow.lib.airflow.operators.awhere_operator import AwhereToS3Operator
+from airflow.operators.awhere_operator import AwhereToS3Operator
 from datetime import date, timedelta, datetime
 import os
 
