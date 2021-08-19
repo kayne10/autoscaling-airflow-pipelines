@@ -1,9 +1,19 @@
 #!/bin/sh
 
-TAG_NAME="${1}"
+set -euo pipefail
 
-# if tag_name exists in local docker images then delete and rebuild
+# Load common vars
+readonly DIR=$(pwd)
+source "${DIR}/local.env"
 
-# elif build new image with new tag name
+readonly TAG_NAME="${1}"
 
-# else echo "No tag name provided. Defaulting to 'local'" and build
+if [[ "$TAG_NAME" == "" ]]
+then
+    echo "Please provide a tag name"
+    exit 1
+else
+    echo "Building Docker image"
+    docker-compose up -d airflow_image
+    echo "Docker image built successfully. Containers are ready :)"
+    exit 0
