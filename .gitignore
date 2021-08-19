@@ -1,0 +1,10 @@
+__init__.py
+__pycache__/
+dags/__pycache__/
+*.pyc
+
+venv/
+*.env
+
+logs/
+.vscode

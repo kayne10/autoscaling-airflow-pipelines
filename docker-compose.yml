@@ -1,0 +1,55 @@
+version: '2.1'
+
+services:
+
+  airflow_image:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: airflow:local
+    container_name: airflow_local
+    entrypoint: ["bash"]
+    command: ""
+
+  postgres:
+    image: postgres:9.6
+    container_name: postgres
+    hostname: postgres
+    environment:
+      - POSTGRES_USER=airflow
+      - POSTGRES_PASSWORD=1q2w3e
+      - POSTGRES_DB=airflow
+    ports:
+      - "5432:5432"
+
+  webserver:
+    image: airflow:local
+    container_name: airflow_webserver
+    restart: always
+    depends_on:
+      - postgres
+    volumes:
+      - ./myairflow/dags:/usr/local/airflow/myairflow/dags
+      - ./myairflow/lib:/usr/local/airflow/myairflow/lib
+      - ./logs:/usr/local/airflow/logs
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./local.env
+    entrypoint: ""
+    command: bash -c "airflow initdb && /usr/local/airflow/entrypoint.sh webserver"
+
+  airflow:
+    image: airflow:local
+    container_name: airflow_scheduler
+    restart: always
+    depends_on:
+      - webserver
+    volumes:
+      - ./myairflow/dags:/usr/local/airflow/myairflow/dags
+      - ./myairflow/lib:/usr/local/airflow/myairflow/lib
+      - ./logs:/usr/local/airflow/logs
+    env_file:
+      - ./local.env
+    entrypoint: ""
+    command: bash -c "/usr/local/airflow/entrypoint.sh scheduler"

@@ -1,4 +1,4 @@
-Orchestrating Batch Data Pipelines with Airflow
+# Orchestrating Batch Data Pipelines with Airflow
 
 This repo is a workspace to create, manage, and schedule data pipelines with Apache Airflow.
 
