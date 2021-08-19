@@ -6,7 +6,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: airflow:local
+    image: airflow:${TAG_NAME:-local}
     container_name: airflow_local
     entrypoint: ["bash"]
     command: ""
@@ -23,7 +23,7 @@ services:
       - "5432:5432"
 
   webserver:
-    image: airflow:local
+    image: airflow:${TAG_NAME:-local}
     container_name: airflow_webserver
     restart: always
     depends_on:
@@ -40,7 +40,7 @@ services:
     command: bash -c "airflow initdb && /usr/local/airflow/entrypoint.sh webserver"
 
   airflow:
-    image: airflow:local
+    image: airflow:${TAG_NAME:-local}
     container_name: airflow_scheduler
     restart: always
     depends_on:

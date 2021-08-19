@@ -8,7 +8,7 @@ This repo is a workspace to create, manage, and schedule data pipelines with Apa
 - AWS CLI
 
 ## Local Development with Docker
-- run `setup_local_dev.sh` to build docker image
+- run `setup_local_dev.sh <tag_name>` to build docker image
 - run `docker-compose up` to start container
 - visit https://localhost:8080
 
