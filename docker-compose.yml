@@ -2,14 +2,6 @@ version: '2.1'
 
 services:
 
-  airflow_image:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: airflow:${TAG_NAME:-local}
-    container_name: airflow_local
-    entrypoint: ["bash"]
-    command: ""
 
   postgres:
     image: postgres:9.6
@@ -19,6 +11,8 @@ services:
       - POSTGRES_USER=airflow
       - POSTGRES_PASSWORD=1q2w3e
       - POSTGRES_DB=airflow
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
 
@@ -46,7 +40,7 @@ services:
     depends_on:
       - webserver
     volumes:
-      - ./dags:/usr/local/airflow/myairflow/dags
+      - ./dags:/usr/local/airflow/dags
       - ./plugins:/usr/local/airflow/plugins
       - ./logs:/usr/local/airflow/logs
     env_file:

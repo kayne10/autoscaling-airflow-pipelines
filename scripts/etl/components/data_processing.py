@@ -6,15 +6,14 @@ def do_something_to_json(raw_json, output_json):
     pass
 
 
-def process_lm_history_CSV(input, output):
+def pandas_process_CSV(input, output, fields):
     with open(input, 'r', encoding='utf-8') as input_file:
         df = pd.read_csv(input_file)
 
         # do something to dataframe
-        df = df.groupby(['Year','Month','product','businessunit']) \
+        df = df.groupby(fields) \
                 .agg({
-                        'organisation_name':'nunique',
-                        'active_user_limit':'sum'
+                        fields[0]:'nunique'
                     })
 
         # save as csv to specified desination
@@ -27,10 +26,9 @@ def process_awhere_JSON(input, output):
     with open(input, 'r', encoding='utf-8') as input_file, open(output, 'w', encoding='utf-8') as output_file:
         line = input_file.readline()
         while line:
-            # process json data by line here
-            json_format = {}        
-            raw_row = json.loads(line)
-            row = do_something_to_json(raw_row, json_format)
+            # TODO: process row somehow
+            # json_format = {}
+            row = json.loads(line)
             if row:
                 output_file.write(json.dumps(row) + '\n')
             line = input_file.readline()

@@ -6,14 +6,19 @@ set -euo pipefail
 readonly DIR=$(pwd)
 source "${DIR}/local.env"
 
-readonly TAG_NAME="${1}"
+TAG_NAME="${1}"
 
+# Build docker image
 if [[ "$TAG_NAME" == "" ]]
 then
     echo "Please provide a tag name"
     exit 1
 else
-    echo "Building Docker image"
-    docker-compose up -d airflow_image
+    echo "Preparing Docker image for tag: ${TAG_NAME}"
+    docker build -t airflow:$TAG_NAME .
     echo "Docker image built successfully. Containers are ready :)"
-    exit 0
+fi
+
+# Spin up airflow containers
+echo "Spinning up remaining containers..."
+docker-compose up -d

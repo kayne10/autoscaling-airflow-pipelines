@@ -14,6 +14,8 @@ ADD ./dags $AIRFLOW_HOME/dags
 ADD ./config/airflow.cfg $AIRFLOW_HOME/
 ADD ./config/requirements.txt $AIRFLOW_HOME/
 ADD ./plugins $AIRFLOW_HOME/plugins
+ADD ./scripts $AIRFLOW_HOME/scripts
+ADD ./entrypoint.sh $AIRFLOW_HOME/
 
 WORKDIR "/usr/local/airflow"
 

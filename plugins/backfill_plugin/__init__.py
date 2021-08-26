@@ -1,6 +1,6 @@
 from flask import Blueprint
 from airflow.plugins_manager import AirflowPlugin
-from backfill import Backfill
+from backfill_plugin.backfill import Backfill
 
 backfill_admin_view = Backfill(category="Admin", name="Backfill")
 backfill_blueprint = Blueprint(
