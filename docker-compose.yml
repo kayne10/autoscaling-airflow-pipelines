@@ -17,7 +17,7 @@ services:
       - "5432:5432"
 
   webserver:
-    image: airflow:${TAG_NAME:-local}
+    image: ${IMAGE}
     container_name: airflow_webserver
     restart: always
     depends_on:
@@ -26,6 +26,7 @@ services:
       - ./dags:/usr/local/airflow/dags
       - ./plugins:/usr/local/airflow/plugins
       - ./logs:/usr/local/airflow/logs
+      - ./scripts:/usr/local/airflow/scripts
     ports:
       - "8080:8080"
     env_file:
@@ -34,7 +35,7 @@ services:
     command: bash -c "airflow initdb && /usr/local/airflow/entrypoint.sh webserver"
 
   airflow:
-    image: airflow:${TAG_NAME:-local}
+    image: ${IMAGE}
     container_name: airflow_scheduler
     restart: always
     depends_on:
@@ -43,6 +44,7 @@ services:
       - ./dags:/usr/local/airflow/dags
       - ./plugins:/usr/local/airflow/plugins
       - ./logs:/usr/local/airflow/logs
+      - ./scripts:/usr/local/airflow/scripts
     env_file:
       - ./local.env
     entrypoint: ""
