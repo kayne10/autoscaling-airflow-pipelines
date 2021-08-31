@@ -30,17 +30,17 @@ with DAG(
     #ingest data
     ingestion_task = AwhereToS3Operator(
         task_id='denver_climate_ingestion',
-        dataset_url='https://api.awhere.com/v2/weather/fields/{}/observations/{}'.format('denver',str(yesterday)),
+        dataset_url='https://api.awhere.com/v2/weather/fields/{}/observations/{}'.format('denver',"{{ execution_date.strftime('%Y-%m-%d') }}"),
         s3_bucket='awhere-etl',
-        s3_key='s3://awhere-etl/ingest/{}/climate_{}.json'.format('denver',str(yesterday)),
+        s3_key='s3://awhere-etl/ingest/{}/climate_{}.json'.format('denver',"{{ execution_date.strftime('%Y-%m-%d') }}"),
         replace=True,
     )
 
     #transform data
     transformation_task = S3FileTransformOperator(
         task_id='denver_climate_transformation',
-        source_s3_key='s3://awhere-etl/ingest/{}/climate_{}.json'.format('denver',str(yesterday)),
-        dest_s3_key='s3://awhere-etl/transformed/{}/climate_{}.json'.format('denver',str(yesterday)),
+        source_s3_key='s3://awhere-etl/ingest/{}/climate_{}.json'.format('denver',"{{ execution_date.strftime('%Y-%m-%d') }}"),
+        dest_s3_key='s3://awhere-etl/transformed/{}/climate_{}.json'.format('denver',"{{ execution_date.strftime('%Y-%m-%d') }}"),
         replace=True,
         transform_script=AIRFLOW_HOME + '/scripts/etl/awhere.py'
     )
