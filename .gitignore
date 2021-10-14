@@ -8,3 +8,4 @@ venv/
 logs/
 .vscode
 postgres-data/
+postgres_data/
