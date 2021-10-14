@@ -1,51 +1,123 @@
-version: '2.1'
+# ORIGINAL SOURCE: https://github.com/andresionek91/airflow-autoscaling-ecs
+
+version: '3'
 
 services:
-
+  redis:
+    container_name: redis
+    image: 'redis:5.0.3'
+    command: redis-server
 
   postgres:
-    image: postgres:9.6
     container_name: postgres
-    hostname: postgres
+    image: postgres:10.4
     environment:
       - POSTGRES_USER=airflow
-      - POSTGRES_PASSWORD=1q2w3e
+      - POSTGRES_PASSWORD=airflow
       - POSTGRES_DB=airflow
     volumes:
-      - ./postgres-data:/var/lib/postgresql/data
+      - ./postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - 5432:5432
 
   webserver:
-    image: ${IMAGE}
+    image: airflow-local:latest
     container_name: airflow_webserver
     restart: always
+    build: .
     depends_on:
       - postgres
+      - redis
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=airflow
+      - POSTGRES_PASSWORD=airflow
+      - POSTGRES_DB=airflow
+      - FERNET_KEY=${FERNET_KEY}
+      - AIRFLOW_BASE_URL=http://localhost:8080
+      - ENABLE_REMOTE_LOGGING=False
+      - STAGE=dev
+      - AWHERE_TOKEN_URL=${AWHERE_TOKEN_URL}
+      - AWHERE_ENCODED_KEY=${AWHERE_ENCODED_KEY}
     volumes:
-      - ./dags:/usr/local/airflow/dags
-      - ./plugins:/usr/local/airflow/plugins
-      - ./logs:/usr/local/airflow/logs
-      - ./scripts:/usr/local/airflow/scripts
+        - ./dags:/usr/local/airflow/dags
     ports:
-      - "8080:8080"
-    env_file:
-      - ./local.env
-    entrypoint: ""
-    command: bash -c "airflow initdb && /usr/local/airflow/entrypoint.sh webserver"
+        - "8080:8080"
+    command: webserver
+    healthcheck:
+      test: ["CMD-SHELL", "[ -f /usr/local/airflow/airflow-webserver.pid ]"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
 
-  airflow:
-    image: ${IMAGE}
+  flower:
+    container_name: flower
+    image: airflow-local:latest
+    restart: always
+    depends_on:
+      - redis
+      - webserver
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=airflow
+      - POSTGRES_PASSWORD=airflow
+      - POSTGRES_DB=airflow
+      - STAGE=dev
+    ports:
+      - "5555:5555"
+    command: flower
+
+  scheduler:
     container_name: airflow_scheduler
+    image: airflow-local:latest
     restart: always
     depends_on:
       - webserver
     volumes:
       - ./dags:/usr/local/airflow/dags
-      - ./plugins:/usr/local/airflow/plugins
-      - ./logs:/usr/local/airflow/logs
-      - ./scripts:/usr/local/airflow/scripts
-    env_file:
-      - ./local.env
-    entrypoint: ""
-    command: bash -c "/usr/local/airflow/entrypoint.sh scheduler"
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=airflow
+      - POSTGRES_PASSWORD=airflow
+      - POSTGRES_DB=airflow
+      - FERNET_KEY=${FERNET_KEY}
+      - AIRFLOW_BASE_URL=http://localhost:8080
+      - ENABLE_REMOTE_LOGGING=False
+      - STAGE=dev
+      - AWHERE_TOKEN_URL=${AWHERE_TOKEN_URL}
+      - AWHERE_ENCODED_KEY=${AWHERE_ENCODED_KEY}
+    command: scheduler
+
+  worker:
+    container_name: airflow_worker
+    image: airflow-local:latest
+    restart: always
+    depends_on:
+      - webserver
+      - scheduler
+    volumes:
+      - ./dags:/usr/local/airflow/dags
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=airflow
+      - POSTGRES_PASSWORD=airflow
+      - POSTGRES_DB=airflow
+      - FERNET_KEY=${FERNET_KEY}
+      - AIRFLOW_BASE_URL=http://localhost:8080
+      - ENABLE_REMOTE_LOGGING=False
+      - STAGE=dev
+      - AWHERE_TOKEN_URL=${AWHERE_TOKEN_URL}
+      - AWHERE_ENCODED_KEY=${AWHERE_ENCODED_KEY}
+    command: worker
