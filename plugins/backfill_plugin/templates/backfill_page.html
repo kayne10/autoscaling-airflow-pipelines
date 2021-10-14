@@ -99,7 +99,7 @@
 				alert('Start date should be less than end date ');
 				return false;
 			}
-
+			// potentially remove since ecs cluster can handle large backfills
 			if (en_date > st_date && en_date.diff(st_date, 'days') > 7) {
 				alert('Difference between start and end date should not exceed 7 days');
 				return false;

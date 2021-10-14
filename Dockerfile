@@ -1,58 +1,116 @@
-FROM python:3.7-stretch
+# BUILD: docker build --rm -t airflow .
+# ORIGINAL SOURCE: https://github.com/puckel/docker-airflow
+
+FROM python:3.8-slim
+LABEL version="1.0"
+# LABEL maintainer="andresionek91"
+
+# Never prompts the user for choices on installation/configuration of packages
+ENV DEBIAN_FRONTEND noninteractive
+ENV TERM linux
 
 # Airflow
-ARG AIRFLOW__CORE__DAGS_FOLDER
-ARG AIRFLOW__CORE__BASE_LOG_FOLDER
-ARG AIRFLOW__CORE__DAG_PROCESSOR_MANAGER_LOG_LOCATION
-ARG AIRFLOW__CORE__SQL_ALCHEMY_CONN
-ARG AIRFLOW__CORE__PLUGINS_FOLDER
-ARG AIRFLOW__CORE__EXECUTOR
-ARG AIRFLOW__CORE__FERNET_KEY
-ARG AIRFLOW__SCHEDULER__CHILD_PROCESS_LOG_DIRECTORY
-ARG AIRFLOW__SCHEDULER__STATSD_ON
-ARG AIRFLOW__WEBSERVER__ERROR_LOGFILE
-ARG AIRFLOW__WEBSERVER__ACCESS_LOGFILE
+ARG AIRFLOW_VERSION=1.10.11
+ENV AIRFLOW_HOME=/usr/local/airflow
+ENV AIRFLOW_GPL_UNIDECODE=yes
+
+# celery config
+ARG CELERY_REDIS_VERSION=4.2.0
+ARG PYTHON_REDIS_VERSION=3.2.0
+
+ARG TORNADO_VERSION=5.1.1
+ARG WERKZEUG_VERSION=0.16.0
+
+#Custom config
 ARG AWHERE_TOKEN_URL
 ARG AWHERE_ENCODED_KEY
+ENV AWHERE_TOKEN_URL=$AWHERE_TOKEN_URL
+ENV AWHERE_ENCODED_KEY=$AWHERE_ENCODED_KEY
 
 # Define en_US.
-ENV AIRFLOW_HOME=/usr/local/airflow
-ENV AIRFLOW__CORE__BASE_LOG_FOLDER=${AIRFLOW__CORE__BASE_LOG_FOLDER}
-ENV AIRFLOW__CORE__DAG_PROCESSOR_MANAGER_LOG_LOCATION=${AIRFLOW__CORE__DAG_PROCESSOR_MANAGER_LOG_LOCATION}
-ENV AIRFLOW__CORE__SQL_ALCHEMY_CONN=${AIRFLOW__CORE__SQL_ALCHEMY_CONN}
-ENV AIRFLOW__CORE__PLUGINS_FOLDER=${AIRFLOW__CORE__PLUGINS_FOLDER}
-ENV AIRFLOW__CORE__EXECUTOR=${AIRFLOW__CORE__EXECUTOR}
-ENV AIRFLOW__CORE__FERNET_KEY=${AIRFLOW__CORE__FERNET_KEY}
-ENV AIRFLOW__SCHEDULER__CHILD_PROCESS_LOG_DIRECTORY=${AIRFLOW__SCHEDULER__CHILD_PROCESS_LOG_DIRECTORY}
-ENV AIRFLOW__SCHEDULER__STATSD_ON=${AIRFLOW__SCHEDULER__STATSD_ON}
-ENV AIRFLOW__WEBSERVER__ERROR_LOGFILE=${AIRFLOW__WEBSERVER__ERROR_LOGFILE}
-ENV AIRFLOW__WEBSERVER__ACCESS_LOGFILE=${AIRFLOW__WEBSERVER__ACCESS_LOGFILE}
-ENV AWHERE_TOKEN_URL=${AWHERE_TOKEN_URL}
-ENV AWHERE_ENCODED_KEY=${AWHERE_ENCODED_KEY}
-
 ENV LANGUAGE en_US.UTF-8
 ENV LANG en_US.UTF-8
 ENV LC_ALL en_US.UTF-8
 ENV LC_CTYPE en_US.UTF-8
 ENV LC_MESSAGES en_US.UTF-8
+ENV LC_ALL en_US.UTF-8
 
-ADD ./dags $AIRFLOW_HOME/dags
-ADD ./config/airflow.cfg $AIRFLOW_HOME/
-ADD ./config/requirements.txt $AIRFLOW_HOME/
-ADD ./plugins $AIRFLOW_HOME/plugins
-ADD ./scripts $AIRFLOW_HOME/scripts
-ADD ./entrypoint.sh $AIRFLOW_HOME/
+RUN set -ex \
+    && buildDeps=' \
+        python3-dev \
+        libkrb5-dev \
+        libsasl2-dev \
+        libssl-dev \
+        libffi-dev \
+        build-essential \
+        libblas-dev \
+        liblapack-dev \
+        libpq-dev \
+        git \
+    ' \
+    && apt-get update -yqq \
+    && apt-get upgrade -yqq \
+    && apt-get install -yqq --no-install-recommends \
+        ${buildDeps} \
+        sudo \
+        python3-pip \
+        python3-requests \
+        default-mysql-client \
+        default-libmysqlclient-dev \
+        apt-utils \
+        curl \
+        rsync \
+        netcat \
+        locales \
+    && sed -i 's/^# en_US.UTF-8 UTF-8$/en_US.UTF-8 UTF-8/g' /etc/locale.gen \
+    && locale-gen \
+    && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
+    && useradd -ms /bin/bash -d ${AIRFLOW_HOME} airflow \
+    && pip install -U pip setuptools wheel \
+    && pip install Cython \
+    && pip install pytz \
+    && pip install pyOpenSSL \
+    && pip install ndg-httpsclient \
+    && pip install pyasn1 \
+    && pip install apache-airflow[async,crypto,celery,kubernetes,jdbc,password,postgres,s3,slack,amazon]==${AIRFLOW_VERSION} \
+    && pip install werkzeug==${WERKZEUG_VERSION} \
+    && pip install redis==${PYTHON_REDIS_VERSION} \
+    && pip install celery[redis]==${CELERY_REDIS_VERSION} \
+    && pip install flask_oauthlib \
+    && pip install psycopg2-binary \
+    && pip install tornado==${TORNADO_VERSION} \
+    && apt-get purge --auto-remove -yqq ${buildDeps} \
+    && apt-get autoremove -yqq --purge \
+    && apt-get clean \
+    && rm -rf \
+        /var/lib/apt/lists/* \
+        /tmp/* \
+        /var/tmp/* \
+        /usr/share/man \
+        /usr/share/doc \
+        /usr/share/doc-base
 
-WORKDIR "/usr/local/airflow"
+COPY config/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
-RUN pip3 install -r requirements.txt
+COPY scripts ${AIRFLOW_HOME}/scripts
+RUN chmod +x ${AIRFLOW_HOME}/scripts/etl/*.py
 
-ENV PYTHONPATH=$PYTHONPATH:$AIRFLOW_HOME
+RUN chown -R airflow: ${AIRFLOW_HOME}
 
-EXPOSE 8080
+USER airflow
 
-RUN chmod u+x entrypoint.sh
-RUN chmod +x scripts/etl/*.py
+COPY config/requirements.txt .
+RUN pip install --user -r requirements.txt
 
-ENTRYPOINT ["/usr/local/airflow/entrypoint.sh"]
-CMD ["webserver"]
+COPY config/airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
+
+COPY dags ${AIRFLOW_HOME}/dags
+COPY plugins ${AIRFLOW_HOME}/plugins
+
+ENV PYTHONPATH ${AIRFLOW_HOME}
+
+EXPOSE 8080 5555 8793
+
+WORKDIR ${AIRFLOW_HOME}
+ENTRYPOINT ["/entrypoint.sh"]
