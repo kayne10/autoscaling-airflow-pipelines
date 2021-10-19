@@ -46,6 +46,11 @@ case "$1" in
   version)
     exec airflow "$@"
     ;;
+  test)
+    airflow initdb
+    sleep 2
+    exec python3 /usr/local/airflow/tests/ci.py
+    ;;
   *)
     exec "$@"
     ;;
