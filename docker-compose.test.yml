@@ -1,0 +1,50 @@
+version: '3'
+
+services:
+    redis:
+        container_name: redis
+        image: 'redis:5.0.3'
+        command: redis-server
+
+    postgres:
+        container_name: postgres
+        image: postgres:10.4
+        environment:
+          - POSTGRES_USER=airflow
+          - POSTGRES_PASSWORD=airflow
+          - POSTGRES_DB=airflow
+        volumes:
+          - ./postgres_data:/var/lib/postgresql/data
+        ports:
+          - 5432:5432
+
+    test:
+        container_name: airflow
+        build:
+            context: .
+            args:
+                FERNET_KEY: ${FERNET_KEY}
+                AWHERE_TOKEN_URL: ${AWHERE_TOKEN_URL}
+                AWHERE_ENCODED_KEY: ${AWHERE_ENCODED_KEY}
+        depends_on:
+            - redis
+            - postgres
+        environment:
+            - REDIS_HOST=redis
+            - REDIS_PORT=6379
+            - POSTGRES_HOST=postgres
+            - POSTGRES_PORT=5432
+            - POSTGRES_USER=airflow
+            - POSTGRES_PASSWORD=airflow
+            - POSTGRES_DB=airflow
+            - FERNET_KEY=${FERNET_KEY}
+            - AIRFLOW_BASE_URL=http://localhost:8080
+            - ENABLE_REMOTE_LOGGING=False
+            - STAGE=dev
+            - AWHERE_TOKEN_URL=${AWHERE_TOKEN_URL}
+            - AWHERE_ENCODED_KEY=${AWHERE_ENCODED_KEY}
+        volumes:
+            - ./dags:/usr/local/airflow/dags
+            - ./plugins:/usr/local/airflow/plugins
+            - ./tests:/usr/local/airflow/tests
+        command: webserver

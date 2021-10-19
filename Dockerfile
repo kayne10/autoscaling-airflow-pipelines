@@ -3,7 +3,7 @@
 
 FROM python:3.8-slim
 LABEL version="1.0"
-# LABEL maintainer="andresionek91"
+LABEL maintainer="tkayneftw10"
 
 # Never prompts the user for choices on installation/configuration of packages
 ENV DEBIAN_FRONTEND noninteractive
@@ -90,7 +90,7 @@ RUN set -ex \
         /usr/share/doc \
         /usr/share/doc-base
 
-COPY config/entrypoint.sh /entrypoint.sh
+COPY bin/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 COPY scripts ${AIRFLOW_HOME}/scripts
@@ -107,6 +107,7 @@ COPY config/airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
 
 COPY dags ${AIRFLOW_HOME}/dags
 COPY plugins ${AIRFLOW_HOME}/plugins
+COPY tests ${AIRFLOW_HOME}/tests
 
 ENV PYTHONPATH ${AIRFLOW_HOME}
 

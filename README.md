@@ -1,6 +1,6 @@
 # Orchestrating Batch Data Pipelines with Airflow
 
-This repo is a workspace to create, manage, and schedule data pipelines with Apache Airflow.
+This repo is a workspace to create, manage, and schedule data pipelines with Apache Airflow. Cloud deployment is capable of building an autoscaling ECS cluster. The specs of the cluster is configurable in `service.yml`.
 
 ## Prerequisites
 - Docker
@@ -69,6 +69,14 @@ The url is in the output of AirflowFlowerEndpoint from cloudformation flower clo
         "OutputValue": "airflow-dev-flower-alb-1290838679.us-west-2.elb.amazonaws.com"
     }
 ]
+```
+
+## Testing
+
+Dags are tested and validated with unit tests. With one command, a test docker environment gets built and dags are testing for import errors.
+
+```bash
+make airflow-test
 ```
 
 ## List of Pipelines

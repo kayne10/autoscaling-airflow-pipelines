@@ -13,9 +13,9 @@ infra-deploy: cloudformation-validate
 	python -c 'from deploy_aws import create_or_update_stacks;  create_or_update_stacks(is_foundation=True)';
 
 push-to-ecr:
-	./deploy_docker.sh build $(tag)
-	./deploy_docker.sh tag $(tag)
-	./deploy_docker.sh push $(tag)
+	bin/deploy_docker.sh build $(tag)
+	bin/deploy_docker.sh tag $(tag)
+	bin/deploy_docker.sh push $(tag)
 
 airflow-deploy: infra-deploy
 	python -c 'from deploy_aws import create_or_update_stacks;  create_or_update_stacks(is_foundation=False)';
@@ -30,3 +30,8 @@ airflow-destroy:
 airflow-local:
 	export FERNET_KEY=${FERNET_KEY}
 	docker-compose up --build
+
+airflow-test:
+	bin/test.sh setup
+	bin/test.sh exec
+	bin/test.sh exit
