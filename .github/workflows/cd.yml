@@ -1,0 +1,11 @@
+name: cd
+  on:
+    push:
+      branches:
+        - master
+jobs:
+  push-to-ecr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: make push-to-ecr tag=$GITHUB_SHA

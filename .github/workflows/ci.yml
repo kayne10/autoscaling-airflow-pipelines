@@ -1,0 +1,12 @@
+name: ci
+on:
+  push:
+    branches-ignore:
+      - master
+jobs:
+  test:
+    runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@2
+        - run: bin/test.sh setup
+        - run: bin/test.sh exec
