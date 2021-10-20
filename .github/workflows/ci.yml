@@ -8,5 +8,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: bin/test.sh setup
-      - run: bin/test.sh exec
+      - name: Setup Test Environment
+        env:
+          FERNET_KEY: ${{ secrets.FERNET_KEY }}
+          AWHERE_ENCODED_KEY: ${{ secrets.AWHERE_ENCODED_KEY }}
+          AWHERE_TOKEN_URL: ${{ secrets.AWHERE_TOKEN_URL }}
+        run: bin/test.sh setup
+      - name: Run unit tests
+        env:
+          FERNET_KEY: ${{ secrets.FERNET_KEY }}
+          AWHERE_ENCODED_KEY: ${{ secrets.AWHERE_ENCODED_KEY }}
+          AWHERE_TOKEN_URL: ${{ secrets.AWHERE_TOKEN_URL }}
+        run: bin/test.sh exec

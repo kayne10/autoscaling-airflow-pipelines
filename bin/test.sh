@@ -12,7 +12,7 @@ case $CMD in
         echo "* Waiting 20s for airflow to start... *"
         sleep 20
         echo "* Executing unit tests... *"
-        exec docker exec -it airflow python3 tests/ci.py
+        exec docker exec -i airflow python3 tests/ci.py
         ;;
     exit)
         echo "* Spinning down test environment... *"
