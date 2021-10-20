@@ -1,0 +1,16 @@
+name: cd
+on:
+  push:
+    branches:
+      - master
+jobs:
+  push-to-ecr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Deploying new image to ECR 
+        env:
+          ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
+          ENVIRONMENT: "dev"
+          AWS_REGION: "us-west-2"
+        run: make push-to-ecr tag=$GITHUB_SHA
