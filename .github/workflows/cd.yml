@@ -29,7 +29,8 @@ jobs:
           echo "$GITHUB_REF"
           echo "${GITHUB_REF#refs/*/}"
           echo "${GITHUB_REF#refs/tags/}"
-          echo "testing this next word $(git describe --abbrev=0 --tags)"
+          git describe --abbrev=0 --tags
+          git describe --tags $GITHUB_SHA
     #   - name: Deploying new image to ECR 
     #     env:
     #       ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
