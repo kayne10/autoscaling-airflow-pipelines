@@ -25,6 +25,10 @@ jobs:
           aws-region: us-west-2
       - run: |
           echo "VERSION=$(git describe --abbrev=0 --tags)" >> $GITHUB_ENV
+      - run: |
+          echo "New version is ${VERSION}"
+      - run: |
+          echo "New version is ${{ env.VERSION }}"
       - name: Deploying new image to ECR 
         env:
           ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
