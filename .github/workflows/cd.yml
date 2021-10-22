@@ -30,4 +30,5 @@ jobs:
           FERNET_KEY: ${{ secrets.FERNET_KEY }}
           AWHERE_ENCODED_KEY: ${{ secrets.AWHERE_ENCODED_KEY }}
           AWHERE_TOKEN_URL: ${{ secrets.AWHERE_TOKEN_URL }}
-        run: make push-to-ecr tag=$GITHUB_SHA
+          VERSION: $(git describe --tags `git rev-list --tags --max-count=1 $GITHUB_SHA`)
+        run: echo $VERSION; make push-to-ecr tag=$GITHUB_SHA
