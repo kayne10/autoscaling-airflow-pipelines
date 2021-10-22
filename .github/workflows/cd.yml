@@ -23,12 +23,15 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-west-2
-      - run: |
-          echo "VERSION=$(git describe --abbrev=0 --tags)" >> $GITHUB_ENV
-      - run: |
-          echo "New version is ${VERSION}"
-      - run: |
-          echo "New version is ${{ env.VERSION }}"
+      - name: Print tag
+        id: version
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+      - name: Check output
+        env:
+          RELEASE_VERSION: ${{ steps.version.outputs.tag }}
+        run: |
+          echo $RELEASE_VERSION
+          echo ${{ steps.vars.outputs.tag }}
       - name: Deploying new image to ECR 
         env:
           ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
@@ -36,4 +39,4 @@ jobs:
           FERNET_KEY: ${{ secrets.FERNET_KEY }}
           AWHERE_ENCODED_KEY: ${{ secrets.AWHERE_ENCODED_KEY }}
           AWHERE_TOKEN_URL: ${{ secrets.AWHERE_TOKEN_URL }}
-        run: make push-to-ecr tag=${{ env.VERSION }}
+        run: make push-to-ecr tag=${{ steps.vars.outputs.tag }}
