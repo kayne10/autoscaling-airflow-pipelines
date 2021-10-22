@@ -25,18 +25,17 @@ jobs:
           aws-region: us-west-2
       - name: Print tag
         id: version
-        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
-      - name: Check output
-        env:
-          RELEASE_VERSION: ${{ steps.version.outputs.tag }}
         run: |
-          echo $RELEASE_VERSION
-          echo ${{ steps.vars.outputs.tag }}
-      - name: Deploying new image to ECR 
-        env:
-          ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
-          ENVIRONMENT: dev
-          FERNET_KEY: ${{ secrets.FERNET_KEY }}
-          AWHERE_ENCODED_KEY: ${{ secrets.AWHERE_ENCODED_KEY }}
-          AWHERE_TOKEN_URL: ${{ secrets.AWHERE_TOKEN_URL }}
-        run: make push-to-ecr tag=${{ steps.vars.outputs.tag }}
+          echo "$GITHUB_REF"
+          echo "${GITHUB_REF#refs/*/}"
+          echo "${GITHUB_REF#refs/tags/}"
+          echo "testing this next word $(git describe --abbrev=0 --tags)"
+    #   - name: Deploying new image to ECR 
+    #     env:
+    #       ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
+    #       ENVIRONMENT: dev
+    #       FERNET_KEY: ${{ secrets.FERNET_KEY }}
+    #       AWHERE_ENCODED_KEY: ${{ secrets.AWHERE_ENCODED_KEY }}
+    #       AWHERE_TOKEN_URL: ${{ secrets.AWHERE_TOKEN_URL }}
+    #       GIT_TAG: ${{ env.VERSION }}
+    #     run: make push-to-ecr tag=$($GIT_TAG)
