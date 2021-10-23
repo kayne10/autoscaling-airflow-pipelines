@@ -24,18 +24,11 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-west-2
-    #   - name: Test output
-    #     run: echo "Output from semver ${{ needs.semver.outputs }}""
-      - name: Test tag
-        run: |
-            echo "VERSION=`git describe --tags $GITHUB_SHA`" >> $GITHUB_ENV
-            echo $VERSION
-            echo ${{ env.VERSION }}
-    #   - name: Deploying new image to ECR 
-    #     env:
-    #       ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
-    #       ENVIRONMENT: dev
-    #       FERNET_KEY: ${{ secrets.FERNET_KEY }}
-    #       AWHERE_ENCODED_KEY: ${{ secrets.AWHERE_ENCODED_KEY }}
-    #       AWHERE_TOKEN_URL: ${{ secrets.AWHERE_TOKEN_URL }}
-    #     run: make push-to-ecr tag=$GITHUB_SHA
+      - name: Deploying new image to ECR 
+        env:
+          ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
+          ENVIRONMENT: dev
+          FERNET_KEY: ${{ secrets.FERNET_KEY }}
+          AWHERE_ENCODED_KEY: ${{ secrets.AWHERE_ENCODED_KEY }}
+          AWHERE_TOKEN_URL: ${{ secrets.AWHERE_TOKEN_URL }}
+        run: make push-to-ecr tag=$GITHUB_SHA
